@@ -8,6 +8,7 @@ from model.model import TransformerModel
 from sklearn.preprocessing import MinMaxScaler
 
 # uvicorn main:app --reload
+# uvicorn main:app --reload --port 8001
 app = FastAPI()
 
 # Pydantic 모델 정의
@@ -55,8 +56,9 @@ async def predict(data: InputData):
         temp_contribution = round(mse_temp / total_mse, 1) if total_mse != 0 else 0
         current_contribution = round(mse_current / total_mse, 1) if total_mse != 0 else 0
 
-        temp_tendency = 1 if data.temperature > scaled_normal[0][0] else 0
-        current_tendency = 1 if data.current > scaled_normal[0][1] else 0
+        # 스케일링된 입력 값과 정상 값 비교
+        temp_tendency = 1 if input_scaled[0, 0] > scaled_normal[0, 0] else 0
+        current_tendency = 1 if input_scaled[0, 1] > scaled_normal[0, 1] else 0
 
         return {
             'lot_id': data.lot_id,
