@@ -6,10 +6,14 @@ import numpy as np
 import pandas as pd
 from model.model import TransformerModel
 from sklearn.preprocessing import MinMaxScaler
+import logging
 
 # uvicorn main:app --reload
 # uvicorn main:app --reload --port 8001
 app = FastAPI()
+
+uvicorn_access_logger = logging.getLogger("uvicorn.access")
+uvicorn_access_logger.disabled = True
 
 # Pydantic 모델 정의
 class InputData(BaseModel):
@@ -27,6 +31,9 @@ async def predict(data: InputData):
         model = g_model
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         model.to(device)
+
+        print("input data:", data)
+
 
         # 정상 온도와 전류
         normal_temp = 70.93422226600362
@@ -55,10 +62,14 @@ async def predict(data: InputData):
         total_mse = mse_temp + mse_current
         temp_contribution = round(mse_temp / total_mse, 1) if total_mse != 0 else 0
         current_contribution = round(mse_current / total_mse, 1) if total_mse != 0 else 0
+        print("total MSE:", total_mse, "temperature MSE:", mse_temp, "current MSE:", mse_current)
+        print("temperature contribution:", temp_contribution, "current contribution:", current_contribution)
 
         # 스케일링된 입력 값과 정상 값 비교
         temp_tendency = 1 if input_scaled[0, 0] > scaled_normal[0, 0] else 0
         current_tendency = 1 if input_scaled[0, 1] > scaled_normal[0, 1] else 0
+        print("temperature tendency:", temp_tendency, "current tendency:", current_tendency)
+        print("normal type:", is_abnormal)
 
         return {
             'lot_id': data.lot_id,
