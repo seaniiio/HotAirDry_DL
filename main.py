@@ -7,10 +7,19 @@ import pandas as pd
 from model.model import TransformerModel
 from sklearn.preprocessing import MinMaxScaler
 import logging
+from fastapi.middleware.cors import CORSMiddleware
 
 # uvicorn main:app --reload
-# uvicorn main:app --reload --port 8001
+# uvicorn main:app --reload --port 8080
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 모든 출처 허용
+    allow_credentials=False,
+    allow_methods=["*"],  # 모든 HTTP 메서드 허용
+    allow_headers=["*"],  # 모든 HTTP 헤더 허용
+)
 
 uvicorn_access_logger = logging.getLogger("uvicorn.access")
 uvicorn_access_logger.disabled = True
